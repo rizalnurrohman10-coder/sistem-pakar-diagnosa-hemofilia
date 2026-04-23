@@ -1,4 +1,4 @@
-Import streamlit as st
+import streamlit as st
 
 # --- KONFIGURASI HALAMAN ---
 st.set_page_config(page_title="Sistem Pakar Hemofilia", page_icon="🩸", layout="wide")
@@ -68,6 +68,7 @@ st.markdown("""
     .stButton>button:hover {
         background-color: #ef233c;
         color: white;
+        border: none;
     }
 
     /* Styling Checkbox */
@@ -78,7 +79,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- DATA MASTER (TIDAK BERUBAH) ---
+# --- DATA MASTER ---
 daftar_gejala = {
     "G01": "Mimisan mendadak dan sulit berhenti", 
     "G02": "Pendarahan gusi tanpa sebab yang jelas",
@@ -123,11 +124,11 @@ with st.sidebar:
 
 # --- HALAMAN 1: BERANDA ---
 if nav == "🏠 Beranda":
-    st.markdown('<div class="header-banner"><h1>SISTEM PAKAR HEMOFILIA </h1></div>', unsafe_allow_html=True)
+    st.markdown('<div class="header-banner"><h1>SISTEM PAKAR HEMOFILIA</h1></div>', unsafe_allow_html=True)
     
     col1, col2 = st.columns([1, 1.2])
     with col1:
-        st.image("https://img.freepik.com/free-vector/blood-donation-concept-illustration_114360-5554.jpg")
+        st.image("https://img.freepik.com/free-vector/blood-donation-concept-illustration_114360-5554.jpg", use_container_width=True)
     with col2:
         st.markdown(f"""
             <div class="custom-card">
@@ -150,7 +151,7 @@ elif nav == "🩺 Proses Diagnosa":
         
         c1, c2 = st.columns(2)
         nama = c1.text_input("Nama Lengkap")
-        umur = c2.number_input("Umur", min_value=0)
+        umur = c2.number_input("Umur", min_value=0, step=1)
         
         st.write("---")
         st.write("Silakan centang gejala yang dirasakan:")
@@ -171,7 +172,6 @@ elif nav == "🩺 Proses Diagnosa":
             if not nama or not gejala_terpilih:
                 st.error("Mohon isi Nama dan pilih minimal 1 gejala!")
             else:
-                # Logika Forward Chaining
                 rules = [
                     {"nama": "Hemofilia Ringan", "gejala": ["G01", "G02", "G03", "G04", "G05", "G06", "G09", "G10", "G11", "G15"], "solusi": ["S01", "S02", "S03", "S04"]},
                     {"nama": "Hemofilia Sedang", "gejala": ["G01", "G02", "G03", "G04", "G05", "G06", "G07", "G08", "G09", "G10", "G11", "G15"], "solusi": ["S05", "S06", "S07", "S08"]},
@@ -203,7 +203,7 @@ elif nav == "🩺 Proses Diagnosa":
                         st.info(f"**{kode_s}**: {daftar_solusi[kode_s]}")
                     st.markdown('</div>', unsafe_allow_html=True)
                 else:
-                    st.warning("Gejala belum cukup spesifik untuk menentukan kategori Hemofilia. Silakan konsultasi lebih lanjut dengan dokter spesialis Hematologi.")
+                    st.warning("Gejala belum cukup spesifik. Silakan hubungi dokter Hematologi.")
 
 # --- HALAMAN 3: INFO ---
 elif nav == "📚 Edukasi":
@@ -213,10 +213,8 @@ elif nav == "📚 Edukasi":
         st.markdown("""
             <div class="custom-card">
                 <h3 class="card-title">Apa itu Hemofilia?</h3>
-                <p>Hemofilia adalah kondisi langka di mana darah tidak membeku secara normal karena kekurangan protein pembekuan darah (faktor VIII atau IX). 
-                Kondisi ini biasanya bersifat keturunan.</p>
+                <p>Hemofilia adalah kondisi langka di mana darah tidak membeku secara normal karena kekurangan protein pembekuan darah (faktor VIII atau IX).</p>
             </div>
         """, unsafe_allow_html=True)
     with col_b:
         st.video("https://www.youtube.com/watch?v=1oW_fFm-v24")
- 
