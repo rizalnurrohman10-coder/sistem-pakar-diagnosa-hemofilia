@@ -219,4 +219,4 @@ elif nav == "📚 Edukasi":
         """, unsafe_allow_html=True)
     with col_b:
         st.video("https://www.youtube.com/watch?v=1oW_fFm-v24")
-        
+ 
