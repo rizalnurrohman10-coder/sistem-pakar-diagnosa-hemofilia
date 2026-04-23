@@ -1,15 +1,15 @@
 import streamlit as st 
 import streamlit.components.v1 as components
 
-================== KONFIGURASI ==================
+#================== KONFIGURASI ==================#
 
 st.set_page_config(page_title="Sistem Pakar Hemofilia", layout="wide")
 
-================== SESSION ==================
+#================== SESSION ==================#
 
 if 'logged_in' not in st.session_state: st.session_state.logged_in = False
 
-================== STYLE ==================
+#================== STYLE ==================#
 
 st.markdown("""
 
@@ -47,11 +47,11 @@ st.markdown("""
 .stButton>button:hover {background-color:#9b0d18; transform:scale(1.03);} 
 </style>""", unsafe_allow_html=True)
 
-================== SVG ==================
+#================== SVG ==================#
 
 def icon_svg(name): icons = { "blood": """<svg width='60' height='60' viewBox='0 0 24 24' fill='#c1121f'><path d='M12 2C12 2 5 10 5 14a7 7 0 0014 0c0-4-7-12-7-12z'/></svg>""", "hospital": """<svg width='60' height='60' viewBox='0 0 24 24' fill='#c1121f'><path d='M3 22V2h18v20h-6v-6H9v6H3z'/></svg>""", "lab": """<svg width='60' height='60' viewBox='0 0 24 24' fill='#c1121f'><path d='M9 2v2l-4 8a5 5 0 0010 0l-4-8V2H9z'/></svg>""", "result": """<svg width='60' height='60' viewBox='0 0 24 24' fill='#c1121f'><path d='M4 2h14v20l-7-3-7 3V2z'/></svg>""" } return icons.get(name, "")
 
-================== DATA (TETAP) ==================
+#================== DATA (TETAP) ==================#
 
 daftar_gejala = { "G01": "Mimisan mendadak dan sulit berhenti", "G02": "Pendarahan gusi tanpa sebab yang jelas", "G03": "Luka kecil sulit berhenti berdarah", "G04": "Memar (hematoma) lama hilang", "G05": "Pendarahan setelah cabut gigi", "G06": "Pendarahan pasca operasi", "G07": "Pendarahan pada otot", "G08": "Pendarahan pada sendi", "G09": "Nyeri pada sendi", "G10": "Pembengkakan sendi", "G11": "Pendarahan akibat benturan ringan", "G12": "Pendarahan spontan", "G13": "Pendarahan pada saluran pencernaan", "G14": "Pendarahan di kepala", "G15": "Riwayat keluarga hemofilia" }
 
@@ -59,11 +59,11 @@ daftar_solusi = { "S01": "Penanganan lokal (tekan, kompres, perban)", "S02": "Ob
 
 rules = [ {"nama": "Hemofilia A (Berat)", "gejala": ["G01","G02","G04","G06","G07","G08","G09","G10","G12","G13","G14","G15"], "solusi": ["S09","S10","S11","S12"]}, {"nama": "Hemofilia B (Sedang)", "gejala": ["G01","G02","G03","G04","G05","G06","G07","G08","G09","G10","G11","G15"], "solusi": ["S05","S06","S07","S08"]}, {"nama": "Hemofilia C (Ringan)", "gejala": ["G01","G02","G03","G04","G05","G06","G09","G10","G11","G15"], "solusi": ["S01","S02","S03","S04"]} ]
 
-================== MENU ==================
+#================== MENU ==================#
 
 if not st.session_state.logged_in: menu = st.sidebar.radio("Menu", ["Login"]) else: menu = st.sidebar.radio("Menu", ["Menu Utama", "Diagnosa", "Hasil", "Logout"])
 
-================== LOGIN ==================
+#================== LOGIN ==================#
 
 if menu == "Login": st.markdown('<div class="main-box">', unsafe_allow_html=True) components.html(icon_svg("blood"), height=70) st.markdown('<h2 class="title">SISTEM PAKAR HEMOFILIA</h2>', unsafe_allow_html=True) st.markdown('<p class="subtitle">Silakan login</p>', unsafe_allow_html=True)
 
@@ -79,11 +79,11 @@ if st.button("LOGIN"):
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-================== MENU UTAMA ==================
+#================== MENU UTAMA ==================#
 
 elif menu == "Menu Utama": st.markdown('<div class="main-box">', unsafe_allow_html=True) components.html(icon_svg("hospital"), height=70) st.markdown('<h2 class="title">MENU UTAMA</h2>', unsafe_allow_html=True) st.write("Selamat datang di sistem pakar diagnosa hemofilia.") st.markdown('</div>', unsafe_allow_html=True)
 
-================== DIAGNOSA ==================
+#================== DIAGNOSA ==================#
 
 elif menu == "Diagnosa": st.markdown('<div class="main-box">', unsafe_allow_html=True) components.html(icon_svg("lab"), height=70)
 
@@ -113,7 +113,7 @@ if st.button("LIHAT HASIL"):
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-================== HASIL ==================
+#================== HASIL ==================#
 
 elif menu == "Hasil": st.markdown('<div class="main-box">', unsafe_allow_html=True) components.html(icon_svg("result"), height=70)
 
@@ -151,6 +151,6 @@ else:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-================== LOGOUT ==================
+#================== LOGOUT ==================#
 
 elif menu == "Logout": st.session_state.logged_in = False st.rerun()
