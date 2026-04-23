@@ -1,1 +1,1 @@
-# sistem-pakar-diagnosa-hemofilia
+# sistem-pakar-diagnosis-hemofilia
