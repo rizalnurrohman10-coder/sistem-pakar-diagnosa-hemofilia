@@ -1,18 +1,16 @@
 import streamlit as st
 
 # ================== KONFIGURASI HALAMAN ==================
-st.set_page_config(page_title="Sistem Pakar Hemofilia", layout="centered")
+st.set_page_config(page_title="Sistem Pakar Diagnosis Hemofilia", layout="centered")
 
 # ================== CUSTOM CSS (UI MERAH PUTIH) ==================
 st.markdown("""
     <style>
-    /* Mengubah font dan warna background utama */
     .main {
         background-color: #f8f9fa;
         color: #212121;
     }
     
-    /* Header Merah */
     .header-box {
         background-color: #D32F2F;
         padding: 20px;
@@ -23,9 +21,9 @@ st.markdown("""
     .header-box h1 {
         color: white !important;
         margin: 0;
+        font-family: 'Helvetica', sans-serif;
     }
 
-    /* Tombol Custom */
     div.stButton > button:first-child {
         background-color: #D32F2F;
         color: white;
@@ -40,22 +38,11 @@ st.markdown("""
         color: white;
     }
 
-    /* Kartu (Card) untuk Login & Hasil */
-    .st-emotion-cache-1r6slb0 {
-        padding: 2rem;
-        border-radius: 15px;
-        border: 1px solid #e0e0e0;
-        background-color: white;
-        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05);
-    }
-
-    /* Sidebar Styling */
     section[data-testid="stSidebar"] {
         background-color: #ffffff;
         border-right: 2px solid #D32F2F;
     }
     
-    /* Judul Subheader */
     h2, h3 {
         color: #D32F2F !important;
     }
@@ -66,7 +53,7 @@ st.markdown("""
 if "login" not in st.session_state:
     st.session_state.login = False
 
-# ================== DATA (TETAP SAMA) ==================
+# ================== DATA ==================
 daftar_gejala = {
     "G01": "Mimisan mendadak dan sulit berhenti",
     "G02": "Pendarahan gusi tanpa sebab yang jelas",
@@ -87,33 +74,34 @@ daftar_gejala = {
 
 daftar_solusi = {
     "S01": "Penanganan lokal (tekan, kompres, perban)",
-    "S02": "Obat antifibrinolitik",
-    "S03": "Edukasi pencegahan",
-    "S04": "Hindari cedera",
-    "S05": "Terapi faktor pembekuan",
-    "S06": "Fisioterapi",
-    "S07": "Monitoring medis",
-    "S08": "Hindari olahraga berat",
-    "S09": "Terapi rutin faktor VIII/IX",
-    "S10": "Penanganan darurat",
-    "S11": "Rehabilitasi",
-    "S12": "Hindari aspirin"
+    "S02": "Pemberian obat antifibrinolitik",
+    "S03": "Edukasi pencegahan perdarahan berulang",
+    "S04": "Profilaksis cedera fisik",
+    "S05": "Terapi penggantian faktor pembekuan darah",
+    "S06": "Fisioterapi rutin",
+    "S07": "Monitoring medis berkala",
+    "S08": "Pembatasan aktivitas fisik intensitas tinggi",
+    "S09": "Terapi rutin konsentrat faktor VIII/IX",
+    "S10": "Penanganan medis darurat segera",
+    "S11": "Rehabilitasi fungsional",
+    "S12": "Kontraindikasi penggunaan aspirin dan NSAID"
 }
 
 rules = [
-    {"nama": "Hemofilia A (Berat)", "gejala": ["G01","G02","G04","G06","G07","G08","G09","G10","G12","G13","G14","G15"], "solusi": ["S09","S10","S11","S12"]},
-    {"nama": "Hemofilia B (Sedang)", "gejala": ["G01","G02","G03","G04","G05","G06","G07","G08","G09","G10","G11","G15"], "solusi": ["S05","S06","S07","S08"]},
-    {"nama": "Hemofilia C (Ringan)", "gejala": ["G01","G02","G03","G04","G05","G06","G09","G10","G11","G15"], "solusi": ["S01","S02","S03","S04"]}
+    {"nama": "Hemofilia A (Klasifikasi: Berat)", "gejala": ["G01","G02","G04","G06","G07","G08","G09","G10","G12","G13","G14","G15"], "solusi": ["S09","S10","S11","S12"]},
+    {"nama": "Hemofilia B (Klasifikasi: Sedang)", "gejala": ["G01","G02","G03","G04","G05","G06","G07","G08","G09","G10","G11","G15"], "solusi": ["S05","S06","S07","S08"]},
+    {"nama": "Hemofilia C (Klasifikasi: Ringan)", "gejala": ["G01","G02","G03","G04","G05","G06","G09","G10","G11","G15"], "solusi": ["S01","S02","S03","S04"]}
 ]
 
 # ================== HALAMAN LOGIN ==================
 if not st.session_state.login:
-    st.markdown('<div class="header-box"><h1>🩸 LOGIN SISTEM</h1></div>', unsafe_allow_html=True)
+    st.markdown('<div class="header-box"><h1>🩸 AUTENTIKASI PENGGUNA</h1></div>', unsafe_allow_html=True)
     
     with st.container():
         left_co, cent_co, last_co = st.columns([1,3,1])
         with cent_co:
-            st.markdown("### Selamat Datang Kembali")
+            st.markdown("### Sistem Pakar Diagnosis Hemofilia")
+            st.caption("Silakan masuk ke akun Anda untuk mengakses sistem.")
             username = st.text_input("Username")
             password = st.text_input("Password", type="password")
             
@@ -122,23 +110,21 @@ if not st.session_state.login:
                     st.session_state.login = True
                     st.rerun()
                 else:
-                    st.error("Username atau Password salah!")
+                    st.error("Kredensial yang Anda masukkan salah!")
 
 # ================== MENU UTAMA ==================
 else:
-    st.sidebar.markdown("<h2 style='text-align:center;'>MENU</h2>", unsafe_allow_html=True)
-    menu = st.sidebar.selectbox("Navigasi", ["Dashboard", "Diagnosis", "Hasil", "Logout"])
+    st.sidebar.markdown("<h2 style='text-align:center;'>PANEL NAVIGASI</h2>", unsafe_allow_html=True)
+    menu = st.sidebar.selectbox("Pilih Layanan", ["Dashboard", "Diagnosis", "Hasil", "Logout"])
 
     if menu == "Dashboard":
-        st.markdown('<div class="header-box"><h1>🩸 DASHBOARD</h1></div>', unsafe_allow_html=True)
-        st.subheader(f"Halo, Selamat Datang!")
-        st.info("Sistem ini menggunakan metode Forward Chaining untuk mendeteksi tingkat keparahan Hemofilia berdasarkan gejala yang Anda berikan.")
-        if st.button("Mulai Diagnosis"):
-            # Programmatically change menu is tricky in simple selectbox, 
-            # for now we guide user to sidebar.
-            st.warning("Silakan pilih menu 'Diagnosis' di sidebar sebelah kiri.")
+        st.markdown('<div class="header-box"><h1>🩸 PANEL UTAMA</h1></div>', unsafe_allow_html=True)
+        st.subheader(f"Selamat Datang di Portal Diagnosis")
+        st.info("Sistem ini didukung oleh metode Forward Chaining untuk mengidentifikasi tingkat keparahan Hemofilia berdasarkan manifestasi klinis yang dialami pasien.")
+        if st.button("Mulai Analisis Gejala"):
+            st.warning("Silakan akses menu 'Diagnosis' melalui bilah navigasi di sebelah kiri.")
 
-    # ================== HALAMAN DIAGNOSIS ==================
+    # ================== HALAMAN DIAGNOSIS (TIDAK BERUBAH) ==================
     elif menu == "Diagnosis":
         st.markdown('<div class="header-box"><h1>📋 PROSES DIAGNOSIS</h1></div>', unsafe_allow_html=True)
         
@@ -153,7 +139,6 @@ else:
             st.subheader("Ceklis Gejala yang Dirasakan:")
             
             gejala_terpilih = []
-            # Menampilkan checklist dalam 2 kolom agar rapi
             cols = st.columns(2)
             items = list(daftar_gejala.items())
             for i, (kode, gejala) in enumerate(items):
@@ -169,16 +154,15 @@ else:
 
     # ================== HALAMAN HASIL ==================
     elif menu == "Hasil":
-        st.markdown('<div class="header-box"><h1>📊 HASIL DIAGNOSIS</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="header-box"><h1>📊 LAPORAN HASIL DIAGNOSIS</h1></div>', unsafe_allow_html=True)
 
         gejala_terpilih = st.session_state.get("gejala", [])
-        nama = st.session_state.get("nama", "Pasien Umum")
+        nama = st.session_state.get("nama", "Pasien")
 
         if not gejala_terpilih:
-            st.warning("Belum ada data diagnosis. Silakan lakukan diagnosis terlebih dahulu.")
+            st.warning("Data diagnosis belum tersedia. Harap melengkapi input gejala pada menu Diagnosis.")
         else:
             hasil = None
-            # Logika pencocokan aturan
             for r in rules:
                 cocok = len([g for g in r["gejala"] if g in gejala_terpilih])
                 if cocok >= len(r["gejala"]) * 0.5:
@@ -186,23 +170,24 @@ else:
                     break
 
             if hasil:
-                st.markdown(f"### Diagnosis: **{hasil['nama']}**")
-                st.write(f"**Nama Pasien:** {nama}")
+                st.markdown(f"### Kesimpulan Klinis: **{hasil['nama']}**")
+                st.write(f"**Identitas Pasien:** {nama}")
                 
                 col_res1, col_res2 = st.columns(2)
                 with col_res1:
-                    with st.expander("Gejala yang Terdeteksi", expanded=True):
+                    with st.expander("Manifestasi Klinis yang Terdeteksi", expanded=True):
                         for g in gejala_terpilih:
                             st.write(f"✅ {daftar_gejala[g]}")
                 
                 with col_res2:
-                    with st.expander("Solusi & Saran Medis", expanded=True):
+                    with st.expander("Rekomendasi Tindakan & Tata Laksana", expanded=True):
                         for s in hasil["solusi"]:
                             st.write(f"📌 {daftar_solusi[s]}")
                 
-                st.button("CETAK HASIL (PDF)")
+                st.button("UNDUH LAPORAN (PDF)")
+                st.caption("*Hasil ini bersifat sementara berdasarkan analisis sistem pakar. Konsultasikan dengan tenaga medis ahli untuk validasi lebih lanjut.")
             else:
-                st.error("Maaf, gejala yang Anda masukkan tidak mencukupi untuk mendiagnosa jenis Hemofilia tertentu secara spesifik.")
+                st.error("Sistem tidak menemukan indikasi spesifik. Gejala yang Anda masukkan belum memenuhi kriteria ambang batas diagnosis Hemofilia dalam database kami.")
 
     # ================== LOGOUT ==================
     elif menu == "Logout":
