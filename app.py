@@ -1,59 +1,152 @@
 import streamlit as st
 
 # ================== KONFIGURASI HALAMAN ==================
-st.set_page_config(page_title="Sistem Pakar Diagnosis Hemofilia", layout="centered")
+st.set_page_config(page_title="Sistem Pakar Hemofilia", page_icon="🩸", layout="centered")
 
-# ================== CUSTOM CSS (UI MERAH PUTIH) ==================
+# ================== CUSTOM CSS (REDESIGN UI MOBILE) ==================
 st.markdown("""
     <style>
-    .main {
-        background-color: #f8f9fa;
-        color: #212121;
-    }
+    /* Mengatur background utama dan menyembunyikan elemen bawaan Streamlit */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
     
-    .header-box {
-        background-color: #D32F2F;
-        padding: 20px;
-        border-radius: 10px;
+    .stApp {
+        background-color: #E8ECEF;
+        background-image: radial-gradient(circle at 50% top, #3A404A 0%, #1A1D24 100%);
+        background-attachment: fixed;
+    }
+
+    /* Container untuk mensimulasikan layar HP */
+    .mobile-container {
+        max-width: 450px;
+        margin: 0 auto;
+        padding-top: 2rem;
+    }
+
+    /* ============ LOGIN PAGE ============ */
+    .glass-login {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(15px);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.5);
+    }
+    .login-logo {
         text-align: center;
-        margin-bottom: 25px;
+        color: #B71C1C;
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 5px;
     }
-    .header-box h1 {
-        color: white !important;
-        margin: 0;
-        font-family: 'Helvetica', sans-serif;
-    }
-
-    div.stButton > button:first-child {
-        background-color: #D32F2F;
-        color: white;
-        border-radius: 8px;
-        border: none;
-        height: 3em;
-        width: 100%;
+    .login-welcome {
+        text-align: center;
+        color: #333;
+        font-size: 18px;
         font-weight: bold;
-    }
-    div.stButton > button:hover {
-        background-color: #b71c1c;
-        color: white;
+        margin-bottom: 20px;
     }
 
-    section[data-testid="stSidebar"] {
-        background-color: #ffffff;
-        border-right: 2px solid #D32F2F;
+    /* ============ MAIN DASHBOARD ============ */
+    .dash-bg {
+        background-color: #F4F6F9 !important;
+    }
+    .top-header-red {
+        background-color: #B71C1C;
+        color: white;
+        padding: 20px;
+        border-radius: 0 0 25px 25px;
+        text-align: left;
+        font-weight: bold;
+        font-size: 20px;
+        margin-top: -3rem;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .welcome-text {
+        color: #333;
+        font-weight: bold;
+        padding: 0 10px;
+        margin-bottom: 10px;
     }
     
-    h2, h3 {
+    /* Panel Banner Hidup Sehat */
+    .health-banner {
+        background: linear-gradient(135deg, #D32F2F, #B71C1C);
+        border-radius: 15px;
+        padding: 20px;
+        color: white;
+        margin-top: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    /* ============ CARDS & BUTTONS ============ */
+    .stButton > button {
+        background-color: #D32F2F !important;
+        color: white !important;
+        border-radius: 12px !important;
+        border: none !important;
+        padding: 10px 20px !important;
+        font-weight: bold !important;
+        width: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(211, 47, 47, 0.3);
+    }
+    .stButton > button:hover {
+        background-color: #B71C1C !important;
+        transform: translateY(-2px);
+    }
+    .btn-secondary > button {
+        background-color: #FFFFFF !important;
         color: #D32F2F !important;
+        border: 2px solid #D32F2F !important;
+        box-shadow: none !important;
+    }
+
+    /* Kartu Gejala & Keparahan */
+    .severity-card {
+        background-color: white;
+        border-radius: 10px;
+        padding: 15px 10px;
+        text-align: center;
+        border: 1px solid #ddd;
+        font-size: 12px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .sev-ringan { border-top: 4px solid #FFCDD2; }
+    .sev-sedang { border-top: 4px solid #E57373; }
+    .sev-berat { border-top: 4px solid #B71C1C; background-color: #B71C1C; color: white; }
+
+    /* Hasil Card */
+    .result-card {
+        background-color: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border: 1px solid #eee;
+    }
+    .result-header {
+        text-align: center;
+        font-weight: 800;
+        color: #333;
+        font-size: 18px;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 10px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# ================== SESSION ==================
-if "login" not in st.session_state:
-    st.session_state.login = False
+# ================== STATE MANAGEMENT ==================
+if "page" not in st.session_state:
+    st.session_state.page = "Login"
+if "gejala_terpilih" not in st.session_state:
+    st.session_state.gejala_terpilih = []
 
-# ================== DATA ==================
+# ================== DATA SISTEM PAKAR ==================
 daftar_gejala = {
     "G01": "Mimisan mendadak dan sulit berhenti",
     "G02": "Pendarahan gusi tanpa sebab yang jelas",
@@ -88,108 +181,187 @@ daftar_solusi = {
 }
 
 rules = [
-    {"nama": "Hemofilia A (Klasifikasi: Berat)", "gejala": ["G01","G02","G04","G06","G07","G08","G09","G10","G12","G13","G14","G15"], "solusi": ["S09","S10","S11","S12"]},
-    {"nama": "Hemofilia B (Klasifikasi: Sedang)", "gejala": ["G01","G02","G03","G04","G05","G06","G07","G08","G09","G10","G11","G15"], "solusi": ["S05","S06","S07","S08"]},
-    {"nama": "Hemofilia C (Klasifikasi: Ringan)", "gejala": ["G01","G02","G03","G04","G05","G06","G09","G10","G11","G15"], "solusi": ["S01","S02","S03","S04"]}
+    {"nama": "HEMOFILIA A - BERAT", "gejala": ["G01","G02","G04","G06","G07","G08","G09","G10","G12","G13","G14","G15"], "solusi": ["S09","S10","S11","S12"]},
+    {"nama": "HEMOFILIA B - SEDANG", "gejala": ["G01","G02","G03","G04","G05","G06","G07","G08","G09","G10","G11","G15"], "solusi": ["S05","S06","S07","S08"]},
+    {"nama": "HEMOFILIA C - RINGAN", "gejala": ["G01","G02","G03","G04","G05","G06","G09","G10","G11","G15"], "solusi": ["S01","S02","S03","S04"]}
 ]
 
-# ================== HALAMAN LOGIN ==================
-if not st.session_state.login:
-    st.markdown('<div class="header-box"><h1>🩸 AUTENTIKASI PENGGUNA</h1></div>', unsafe_allow_html=True)
+# =======================================================
+# ================== HALAMAN LOGIN ======================
+# =======================================================
+if st.session_state.page == "Login":
+    st.markdown('<div class="mobile-container">', unsafe_allow_html=True)
+    st.markdown('''
+        <div class="glass-login">
+            <div class="login-logo">🩸 SISTEM PAKAR<br>HEMOFILIA</div>
+            <div class="login-welcome">Selamat Datang,<br><span style="font-size:12px; font-weight:normal;">Mulai penelusuran deteksi dini di sini.</span></div>
+        </div>
+    ''', unsafe_allow_html=True)
     
-    with st.container():
-        left_co, cent_co, last_co = st.columns([1,3,1])
-        with cent_co:
-            st.markdown("### Sistem Pakar Diagnosis Hemofilia")
-            st.caption("Silakan masuk ke akun Anda untuk mengakses sistem.")
-            username = st.text_input("Username")
-            password = st.text_input("Password", type="password")
-            
-            if st.button("MASUK KE SISTEM"):
-                if username == "admin" and password == "123":
-                    st.session_state.login = True
-                    st.rerun()
-                else:
-                    st.error("Kredensial yang Anda masukkan salah!")
-
-# ================== MENU UTAMA ==================
-else:
-    st.sidebar.markdown("<h2 style='text-align:center;'>PANEL NAVIGASI</h2>", unsafe_allow_html=True)
-    menu = st.sidebar.selectbox("Pilih Layanan", ["Dashboard", "Diagnosis", "Hasil", "Logout"])
-
-    if menu == "Dashboard":
-        st.markdown('<div class="header-box"><h1>🩸 PANEL UTAMA</h1></div>', unsafe_allow_html=True)
-        st.subheader(f"Selamat Datang di Portal Diagnosis")
-        st.info("Sistem ini didukung oleh metode Forward Chaining untuk mengidentifikasi tingkat keparahan Hemofilia berdasarkan manifestasi klinis yang dialami pasien.")
-        if st.button("Mulai Analisis Gejala"):
-            st.warning("Silakan akses menu 'Diagnosis' melalui bilah navigasi di sebelah kiri.")
-
-    # ================== HALAMAN DIAGNOSIS (TIDAK BERUBAH) ==================
-    elif menu == "Diagnosis":
-        st.markdown('<div class="header-box"><h1>📋 PROSES DIAGNOSIS</h1></div>', unsafe_allow_html=True)
-        
-        with st.form("form_diagnosis"):
-            col1, col2 = st.columns(2)
-            with col1:
-                nama = st.text_input("Nama Pasien")
-            with col2:
-                umur = st.number_input("Umur Pasien", 0, 120)
-
-            st.markdown("---")
-            st.subheader("Ceklis Gejala yang Dirasakan:")
-            
-            gejala_terpilih = []
-            cols = st.columns(2)
-            items = list(daftar_gejala.items())
-            for i, (kode, gejala) in enumerate(items):
-                with cols[i % 2]:
-                    if st.checkbox(gejala, key=kode):
-                        gejala_terpilih.append(kode)
-
-            submitted = st.form_submit_button("ANALISIS SEKARANG")
-            if submitted:
-                st.session_state.nama = nama
-                st.session_state.gejala = gejala_terpilih
-                st.success("Analisis selesai! Silakan buka menu 'Hasil'.")
-
-    # ================== HALAMAN HASIL ==================
-    elif menu == "Hasil":
-        st.markdown('<div class="header-box"><h1>📊 LAPORAN HASIL DIAGNOSIS</h1></div>', unsafe_allow_html=True)
-
-        gejala_terpilih = st.session_state.get("gejala", [])
-        nama = st.session_state.get("nama", "Pasien")
-
-        if not gejala_terpilih:
-            st.warning("Data diagnosis belum tersedia. Harap melengkapi input gejala pada menu Diagnosis.")
+    st.markdown("<br>", unsafe_allow_html=True)
+    username = st.text_input("Username", placeholder="Masukkan username", label_visibility="collapsed")
+    password = st.text_input("Kata Sandi", type="password", placeholder="••••••••", label_visibility="collapsed")
+    
+    if st.button("Masuk"):
+        if username == "admin" and password == "123":
+            st.session_state.page = "Dashboard"
+            st.rerun()
         else:
-            hasil = None
-            for r in rules:
-                cocok = len([g for g in r["gejala"] if g in gejala_terpilih])
-                if cocok >= len(r["gejala"]) * 0.5:
-                    hasil = r
-                    break
+            st.error("Kredensial Salah!")
+            
+    st.markdown('''
+        <div style="display:flex; justify-content:space-between; margin-top:15px; font-size:12px; color:white;">
+            <span>Lupa Kata Sandi?</span>
+            <span>Daftar Akun</span>
+        </div>
+    ''', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-            if hasil:
-                st.markdown(f"### Kesimpulan Klinis: **{hasil['nama']}**")
-                st.write(f"**Identitas Pasien:** {nama}")
-                
-                col_res1, col_res2 = st.columns(2)
-                with col_res1:
-                    with st.expander("Manifestasi Klinis yang Terdeteksi", expanded=True):
-                        for g in gejala_terpilih:
-                            st.write(f"✅ {daftar_gejala[g]}")
-                
-                with col_res2:
-                    with st.expander("Rekomendasi Tindakan & Tata Laksana", expanded=True):
-                        for s in hasil["solusi"]:
-                            st.write(f"📌 {daftar_solusi[s]}")
-                
-                st.button("UNDUH LAPORAN (PDF)")
-                st.caption("*Hasil ini bersifat sementara berdasarkan analisis sistem pakar. Konsultasikan dengan tenaga medis ahli untuk validasi lebih lanjut.")
-            else:
-                st.error("Sistem tidak menemukan indikasi spesifik. Gejala yang Anda masukkan belum memenuhi kriteria ambang batas diagnosis Hemofilia dalam database kami.")
+# =======================================================
+# ================== HALAMAN DASHBOARD ==================
+# =======================================================
+elif st.session_state.page == "Dashboard":
+    # Ubah background menjadi putih/abu terang
+    st.markdown('<style>.stApp { background-image: none; background-color: #F4F6F9; }</style>', unsafe_allow_html=True)
+    
+    st.markdown('<div class="top-header-red">🩸 SISTEM PAKAR HEMOFILIA</div>', unsafe_allow_html=True)
+    st.markdown('<div class="welcome-text">Welcome back, Pengguna! 👋</div>', unsafe_allow_html=True)
+    
+    # Card Main Button
+    st.markdown('''
+        <div style="background:white; border-radius:15px; padding:30px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.05); margin-bottom:15px;">
+            <div style="font-size:40px; color:#D32F2F; margin-bottom:10px;">▶️</div>
+            <h3 style="color:#333; margin:0;">Mulai Diagnosis</h3>
+        </div>
+    ''', unsafe_allow_html=True)
+    if st.button("KLIK UNTUK MULAI DIAGNOSIS", key="btn_mulai"):
+        st.session_state.page = "Diagnosis"
+        st.rerun()
 
-    # ================== LOGOUT ==================
-    elif menu == "Logout":
-        st.session_state.login = False
+    # 3 Kolom Menu Bawah
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        st.markdown('<div style="background:white; border-radius:10px; padding:15px 5px; text-align:center; font-size:11px; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.05);">🕘<br>Riwayat<br>Diagnosa</div>', unsafe_allow_html=True)
+    with c2:
+        st.markdown('<div style="background:white; border-radius:10px; padding:15px 5px; text-align:center; font-size:11px; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.05);">ℹ️<br>Informasi<br>Tersedia</div>', unsafe_allow_html=True)
+    with c3:
+        st.markdown('<div style="background:white; border-radius:10px; padding:15px 5px; text-align:center; font-size:11px; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.05);">📰<br>Berita<br>Terkini</div>', unsafe_allow_html=True)
+
+    # Banner Bawah
+    st.markdown('''
+        <div class="health-banner">
+            <h3 style="margin:0;">Panduan Hidup Sehat 🏃‍♀️</h3>
+            <p style="font-size:12px; margin-top:5px; opacity:0.9;">Panduan gaya hidup sehat yang disarankan untuk penderita gangguan perdarahan.</p>
+        </div>
+    ''', unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown('<div class="btn-secondary">', unsafe_allow_html=True)
+    if st.button("Keluar Akun"):
+        st.session_state.page = "Login"
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# =======================================================
+# ================== HALAMAN DIAGNOSIS ==================
+# =======================================================
+elif st.session_state.page == "Diagnosis":
+    st.markdown('<style>.stApp { background-image: none; background-color: #F4F6F9; }</style>', unsafe_allow_html=True)
+    st.markdown('<div class="top-header-red">📋 PROSES DIAGNOSIS</div>', unsafe_allow_html=True)
+    
+    with st.form("form_diagnosis"):
+        st.write("**Ceklis Gejala yang Dialami Pasien:**")
+        st.markdown("<hr style='margin-top:0; margin-bottom:15px;'>", unsafe_allow_html=True)
+        
+        gejala_terpilih = []
+        for kode, gejala in daftar_gejala.items():
+            if st.checkbox(gejala, key=kode):
+                gejala_terpilih.append(kode)
+
+        st.markdown("<br><b>Opsi Pemilihan Tingkat Keparahan (Referensi):</b>", unsafe_allow_html=True)
+        
+        # Tampilan 3 Kartu Keparahan layaknya di gambar
+        col_r, col_s, col_b = st.columns(3)
+        with col_r:
+            st.markdown('<div class="severity-card sev-ringan"><b>RINGAN</b><br><br>Lebam minimal, perdarahan sesekali</div>', unsafe_allow_html=True)
+        with col_s:
+            st.markdown('<div class="severity-card sev-sedang"><b>SEDANG</b><br><br>Lebam sedang, perdarahan sendi terkontrol</div>', unsafe_allow_html=True)
+        with col_b:
+            st.markdown('<div class="severity-card sev-berat"><b>BERAT</b><br><br>Perdarahan spontan, sering, nyeri berat</div>', unsafe_allow_html=True)
+            
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        submitted = st.form_submit_button("TERAPKAN PILIHAN & LIHAT HASIL")
+        if submitted:
+            st.session_state.gejala_terpilih = gejala_terpilih
+            st.session_state.page = "Hasil"
+            st.rerun()
+            
+    if st.button("Kembali"):
+        st.session_state.page = "Dashboard"
+        st.rerun()
+
+# =======================================================
+# ================== HALAMAN HASIL ======================
+# =======================================================
+elif st.session_state.page == "Hasil":
+    st.markdown('<style>.stApp { background-image: none; background-color: #F4F6F9; }</style>', unsafe_allow_html=True)
+    
+    # Header Banner Image placeholder
+    st.markdown('''
+        <div style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url('https://img.freepik.com/free-vector/red-blood-cells-background_1048-5221.jpg'); 
+        background-size: cover; background-position: center; padding: 40px 20px; text-align: center; color: white; border-radius: 0 0 20px 20px; margin-top: -3rem; margin-bottom: 20px;">
+            <h2 style="margin:0;">HASIL DIAGNOSIS</h2>
+            <p style="font-size:12px; opacity:0.8; margin:0;">Berdasarkan Gejala yang Anda Ceklis</p>
+        </div>
+    ''', unsafe_allow_html=True)
+
+    gejala_terpilih = st.session_state.gejala_terpilih
+
+    if not gejala_terpilih:
+        st.warning("Belum ada gejala yang dipilih.")
+    else:
+        hasil = None
+        # Logika Pencocokan Aturan Sistem Pakar
+        for r in rules:
+            cocok = len([g for g in r["gejala"] if g in gejala_terpilih])
+            if cocok >= len(r["gejala"]) * 0.5:
+                hasil = r
+                break
+
+        if hasil:
+            # Build HTML list untuk Gejala
+            list_gejala_html = "".join([f"<li>✔️ {daftar_gejala[g]}</li>" for g in gejala_terpilih])
+            # Build HTML list untuk Solusi
+            list_solusi_html = "".join([f"<li>📌 <b>{daftar_solusi[s]}</b></li>" for s in hasil["solusi"]])
+
+            st.markdown(f'''
+            <div class="result-card">
+                <div class="result-header">
+                    DIAGNOSIS:<br>KEMUNGKINAN BESAR {hasil['nama']}
+                </div>
+                
+                <p style="font-size:14px; font-weight:bold; margin-bottom:5px;">Gejala yang Dilaporkan:</p>
+                <ul style="font-size:13px; color:#555; padding-left:15px; margin-top:0;">
+                    {list_gejala_html}
+                </ul>
+                
+                <p style="font-size:14px; font-weight:bold; margin-bottom:5px; margin-top:15px;">Solusi & Saran Lanjutan:</p>
+                <ul style="font-size:13px; color:#555; padding-left:15px; margin-top:0;">
+                    {list_solusi_html}
+                </ul>
+            </div>
+            ''', unsafe_allow_html=True)
+        else:
+            st.error("Data gejala tidak cukup untuk menghasilkan diagnosis spesifik.")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Dua Tombol di bawah
+    if st.button("CETAK HASIL"):
+        st.success("Fungsi cetak PDF akan dijalankan.")
+        
+    if st.button("KEMBALI KE MENU UTAMA"):
+        st.session_state.gejala_terpilih = []
+        st.session_state.page = "Dashboard"
         st.rerun()
