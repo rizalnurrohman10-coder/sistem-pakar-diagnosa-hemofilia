@@ -1,19 +1,19 @@
-Import streamlit as st
+import streamlit as st
 
 # ================== KONFIGURASI HALAMAN ==================
-St.set_page_config(page_title=”Sistem Pakar Diagnosis Hemofilia”, page_icon=”🩸”, layout=”centered”)
+st.set_page_config(page_title="Sistem Pakar Penyakit Hemofilia", page_icon="🩸", layout="centered")
 
-# ================== CUSTOM CSS (OPTIMASI KONTRAS & UI MERAH PUTIH) ==================
-St.markdown(“””
+# ================== CUSTOM CSS (OPTIMASI KONTRAS & UI) ==================
+st.markdown("""
     <style>
     .stApp {
-        Background-color: #F4F6F9 !important;
+        background-color: #F4F6F9 !important;
     }
     
-    /* Memastikan teks terbaca jelas */
-    P, label, span, li, div, .stMarkdown {
-        Color: #1A1D23 !important; 
-        Font-weight: 500 !important;
+    /* Memastikan teks terbaca jelas (Hitam Pekat) */
+    p, label, span, li, div, h3, .stMarkdown {
+        color: #1A1D23 !important; 
+        font-weight: 500 !important;
     }
 
     /* Tombol Merah dengan teks Putih */
@@ -28,209 +28,221 @@ St.markdown(“””
 
     /* Kotak Header */
     .top-header-red {
-        Background-color: #B71C1C;
-        Color: #FFFFFF !important;
-        Padding: 20px;
-        Border-radius: 15px;
-        Text-align: center;
-        Margin-bottom: 20px;
+        background-color: #B71C1C;
+        color: #FFFFFF !important;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 20px;
     }
     .top-header-red h1 {
-        Color: #FFFFFF !important;
-        Margin: 0;
+        color: #FFFFFF !important;
+        margin: 0;
     }
 
     /* Checkbox agar kontras */
-    Div[data-testid=”stCheckbox”] {
-        Background-color: #ffffff;
-        Padding: 10px;
-        Border-radius: 8px;
-        Border: 1px solid #ced4da;
-        Margin-bottom: 8px;
+    div[data-testid="stCheckbox"] {
+        background-color: #ffffff;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        margin-bottom: 8px;
     }
 
     /* Card Hasil */
     .result-card {
-        Background-color: #FFFFFF;
-        Border-radius: 15px;
-        Padding: 25px;
-        Border: 2px solid #D32F2F;
-        Box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        background-color: #FFFFFF;
+        border-radius: 15px;
+        padding: 25px;
+        border: 2px solid #D32F2F;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .severity-card {
+        background-color: #FFFFFF;
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        border: 1px solid #ddd;
+        font-weight: bold;
     }
     </style>
-    “””, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-# ================== DATA (SESUAI DOKUMEN WORD) ==================
-# [span_0](start_span)Sumber:[span_0](end_span)
-Daftar_gejala = {
-    “G01”: “Mimisan mendadak dan sulit berhenti”,
-    “G02”: “Pendarahan gusi tanpa sebab yang jelas”,
-    “G03”: “Luka kecil sulit berhenti berdarah”,
-    “G04”: “Memar (hematoma) lama hilang”,
-    “G05”: “Pendarahan setelah cabut gigi”,
-    “G06”: “Pendarahan pasca operasi”,
-    “G07”: “Pendarahan pada otot”,
-    “G08”: “Pendarahan pada sendi”,
-    “G09”: “Nyeri pada sendi”,
-    “G10”: “Pembengkakan sendi”,
-    “G11”: “Pendarahan akibat benturan ringan”,
-    “G12”: “Pendarahan spontan”,
-    “G13”: “Pendarahan pada saluran pencernaan”,
-    “G14”: “Pendarahan di kepala”,
-    “G15”: “Riwayat keluarga hemofilia”
+# ================== DATA SISTEM PAKAR ==================
+daftar_gejala = {
+    "G01": "Mimisan mendadak dan sulit berhenti",
+    "G02": "Pendarahan gusi tanpa sebab yang jelas",
+    "G03": "Luka kecil sulit berhenti berdarah",
+    "G04": "Memar (hematoma) lama hilang",
+    "G05": "Pendarahan setelah cabut gigi",
+    "G06": "Pendarahan pasca operasi",
+    "G07": "Pendarahan pada otot",
+    "G08": "Pendarahan pada sendi",
+    "G09": "Nyeri pada sendi",
+    "G10": "Pembengkakan sendi",
+    "G11": "Pendarahan akibat benturan ringan",
+    "G12": "Pendarahan spontan",
+    "G13": "Pendarahan pada saluran pencernaan",
+    "G14": "Pendarahan di kepala",
+    "G15": "Riwayat keluarga hemofilia"
 }
 
-# [span_1](start_span)Sumber:[span_1](end_span)
-Daftar_solusi = {
-    “S01”: “Penanganan lokal (tekan, kompres, perban)”,
-    “S02”: “Obat pendukung (antifibrinoltik, desmopressin)”,
-    “S03”: “Edukasi pencegahan”,
-    “S04”: “Kesadaran terhadap resiko cedera dan pendarahan”,
-    “S05”: “Terapi faktor pembekuan saat diperlukan (on-demand)”,
-    “S06”: “Fisioterapi untuk mencegah kerusakan sendi”,
-    “S07”: “Monitoring medis berkala”,
-    “S08”: “Edukasi aktivitas (menghindari olahraga kontak berat) ”,
-    “S09”: “Terapi profilaksis rutin (factor VIII/IX)”,
-    “S10”: “Penanganan darurat untuk pendarahan internal”,
-    “S11”: “Rehabilitasi jangka panjang”,
-    “S12”: “Menghindari obat aspirin dan NSAID karena meningkatkan resiko pendarahan”
+daftar_solusi = {
+    "S01": "Penanganan lokal (tekan, kompres, perban)",
+    "S02": "Obat pendukung (antifibrinoltik, desmopressin)",
+    "S03": "Edukasi pencegahan",
+    "S04": "Kesadaran terhadap resiko cedera dan pendarahan",
+    "S05": "Terapi faktor pembekuan saat diperlukan (on-demand)",
+    "S06": "Fisioterapi untuk mencegah kerusakan sendi",
+    "S07": "Monitoring medis berkala",
+    "S08": "Edukasi aktivitas (menghindari olahraga kontak berat)",
+    "S09": "Terapi profilaksis rutin (factor VIII/IX)",
+    "S10": "Penanganan darurat untuk pendarahan internal",
+    "S11": "Rehabilitasi jangka panjang",
+    "S12": "Menghindari obat aspirin dan NSAID karena meningkatkan resiko pendarahan"
 }
 
-# [span_2](start_span)Sumber:[span_2](end_span)
-Rules = [
+rules = [
     {
-        “nama”: “Hemofilia A (Klasifikasi: Berat)”, 
-        “gejala”: [“G01”,”G02”,”G04”,”G06”,”G07”,”G08”,”G09”,”G10”,”G12”,”G13”,”G14”,”G15”], 
-        “solusi”: [“S09”,”S10”,”S11”,”S12”]
+        "nama": "Hemofilia A (Klasifikasi: Berat)", 
+        "gejala": ["G01","G02","G04","G06","G07","G08","G09","G10","G12","G13","G14","G15"], 
+        "solusi": ["S09","S10","S11","S12"]
     },
     {
-        “nama”: “Hemofilia B (Klasifikasi: Sedang)”, 
-        “gejala”: [“G01”,”G02”,”G03”,”G04”,”G05”,”G06”,”G07”,”G08”,”G09”,”G10”,”G11”,”G15”], 
-        “solusi”: [“S05”,”S06”,”S07”,”S08”]
+        "nama": "Hemofilia B (Klasifikasi: Sedang)", 
+        "gejala": ["G01","G02","G03","G04","G05","G06","G07","G08","G09","G10","G11","G15"], 
+        "solusi": ["S05","S06","S07","S08"]
     },
     {
-        “nama”: “Hemofilia C (Klasifikasi: Ringan)”, 
-        “gejala”: [“G01”,”G02”,”G03”,”G04”,”G05”,”G06”,”G09”,”G10”,”G11”,”G15”], 
-        “solusi”: [“S01”,”S02”,”S03”,”S04”]
+        "nama": "Hemofilia C (Klasifikasi: Ringan)", 
+        "gejala": ["G01","G02","G03","G04","G05","G06","G09","G10","G11","G15"], 
+        "solusi": ["S01","S02","S03","S04"]
     }
 ]
 
 # ================== STATE MANAGEMENT ==================
-If “page” not in st.session_state:
-    St.session_state.page = “Login”
-If “gejala_terpilih” not in st.session_state:
-    St.session_state.gejala_terpilih = []
+if "page" not in st.session_state:
+    st.session_state.page = "Login"
+if "gejala_terpilih" not in st.session_state:
+    st.session_state.gejala_terpilih = []
+if "nama_pasien" not in st.session_state:
+    st.session_state.nama_pasien = ""
 
 # ================== HALAMAN LOGIN ==================
-If st.session_state.page == “Login”:
-    St.markdown(‘<div class=”top-header-red”><h1>🩸 LOGINI</h1></div>’, unsafe_allow_html=True)
-    St.write(“<br>”, unsafe_allow_html=True)
-    Username = st.text_input(“Username”)
-    Password = st.text_input(“Password”, type=”password”)
+if st.session_state.page == "Login":
+    st.markdown('<div class="top-header-red"><h1>🩸 LOGIN</h1></div>', unsafe_allow_html=True)
+    st.write("<br>", unsafe_allow_html=True)
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
     
-    If st.button(“MASUK KE SISTEM”):
-        If username == “admin” and password == “123”:
-            St.session_state.page = “Dashboard”
-            St.rerun()
-        Else:
-            [span_3](start_span)st.error(“Kredensial salah[span_3](end_span)!”)
+    if st.button("MASUK KE SISTEM"):
+        if username == "admin" and password == "123":
+            st.session_state.page = "Menu Utama"
+            st.rerun()
+        else:
+            st.error("Kredensial salah!")
 
-# ================== SISTEM PAKAR HEMOFILIA ==================
-Elif st.session_state.page == “Menu Utama”:
-    St.markdown(‘<div class=”top-header-red”>🏠 MENU UTAMA</div>’, unsafe_allow_html=True)
+# ================== MENU UTAMA ==================
+elif st.session_state.page == "Menu Utama":
+    st.markdown('<div class="top-header-red"><h1>🏠 MENU UTAMA</h1></div>', unsafe_allow_html=True)
     
-    St.markdown(f’’’
-        <div style=”background:white; padding:20px; border-radius:15px; border-left:8px solid #B71C1C; margin-bottom:20px;”>
-            <h3 style=”margin:0; color:#B71C1C !important;”>Halo, Admin! 👋</h3>
-            <p style=”margin:0; font-size:14px;”>Selamat datang di sistem deteksi dini Hemofilia.</p>
+    st.markdown(f'''
+        <div style="background:white; padding:20px; border-radius:15px; border-left:8px solid #B71C1C; margin-bottom:20px;">
+            <h3 style="margin:0; color:#B71C1C !important;">Halo, Admin! 👋</h3>
+            <p style="margin:0; font-size:14px;">Selamat datang di sistem deteksi dini Hemofilia.</p>
         </div>
-    ‘’’, unsafe_allow_html=True)
+    ''', unsafe_allow_html=True)
 
-    If st.button(“🚀 MULAI DIAGNOSIS  PENYAKIT SEKARANG”):
-        St.session_state.page = “Diagnosis Penyakit”
-        St.rerun()
+    if st.button("🚀 MULAI PENYAKIT SEKARANG"):
+        st.session_state.page = "Penyakit"
+        st.rerun()
 
-    St.markdown(“<br><p style=’text-align:center; font-weight:bold;’>Menu Navigasi Cepat</p>”, unsafe_allow_html=True)
-    C1, c2 = st.columns(2)
-    With c1:
-        St.button(“📖 Edukasi Penyakit”)
-    With c2:
-        If st.button(“🚪 Keluar Akun”):
-            St.session_state.page = “Login”
-            St.rerun()
+    st.markdown("<br><p style='text-align:center; font-weight:bold;'>Menu Navigasi Cepat</p>", unsafe_allow_html=True)
+    c1, c2 = st.columns(2)
+    with c1:
+        if st.button("📖 Edukasi Penyakit"):
+            st.info("Fitur edukasi dalam pengembangan.")
+    with c2:
+        if st.button("🚪 Keluar Akun"):
+            st.session_state.page = "Login"
+            st.rerun()
 
-
-# ================== HALAMAN DIAGNOSIS PENYAKIT==================
-Elif st.session_state.page == “Diagnosis  Penyakit”:
-    St.markdown(‘<div class=”top-header-red”><h1>📋 PROSES DIAGNOSIS PENYAKIT</h1></div>’, unsafe_allow_html=True)
+# ================== HALAMAN PROSES PENYAKIT ==================
+elif st.session_state.page == "Penyakit":
+    st.markdown('<div class="top-header-red"><h1>📋 PROSES PENYAKIT</h1></div>', unsafe_allow_html=True)
     
-    With st.form(“form_diagnosis_penyakit”):
-        Nama = st.text_input(“Nama Pasien”)
-        Umur = st.number_input(“Umur Pasien”, 0, 1000)
-        St.markdown(“---“)
-        St.subheader(“Ceklis Gejala yang Dirasakan:”)
+    with st.form("form_penyakit"):
+        nama_input = st.text_input("Nama Pasien")
+        umur_input = st.number_input("Umur Pasien", 0, 120)
+        st.markdown("---")
+        st.subheader("Ceklis Gejala yang Dirasakan:")
         
-        Gejala_user = []
-        For kode, teks in daftar_gejala.items():
-            If st.checkbox(teks, key=kode):
-                Gejala_user.append(kode)
+        gejala_user = []
+        for kode, teks in daftar_gejala.items():
+            if st.checkbox(teks, key=kode):
+                gejala_user.append(kode)
         
-St.markdown(“---“)
-        St.markdown(“<p style=’font-weight:bold; color:#B71C1C !important;’>Referensi Tingkat Keparahan:</p>”, unsafe_allow_html=True)
-        Col1, col2, col3 = st.columns(3)
-        With col1:
-            St.markdown(‘<div class=”severity-card”><b>RINGAN</b><br><small> Check All</small></div>’, unsafe_allow_html=True)
-        With col2:
-            St.markdown(‘<div class=”severity-card”><b>SEDANG</b><br><small>Check All</small></div>’, unsafe_allow_html=True)
-        With col3:
-            St.markdown(‘<div class=”severity-card”><b>BERAT</b><br><small>Check all</small></div>’, unsafe_allow_html=True)
+        st.markdown("---")
+        st.markdown("<p style='font-weight:bold; color:#B71C1C !important;'>Referensi Tingkat Keparahan:</p>", unsafe_allow_html=True)
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown('<div class="severity-card">RINGAN</div>', unsafe_allow_html=True)
+        with col2:
+            st.markdown('<div class="severity-card">SEDANG</div>', unsafe_allow_html=True)
+        with col3:
+            st.markdown('<div class="severity-card">BERAT</div>', unsafe_allow_html=True)
         
-        St.write(“<br>”, unsafe_allow_html=True)
-        If st.form_submit_button(“PROSES HASIL DIAGNOSIS PENYAKIT”):
-            St.session_state.gejala_terpilih = gejala_user
-            St.session_state.page = “Hasil”
-            St.rerun()
+        st.write("<br>", unsafe_allow_html=True)
+        if st.form_submit_button("PROSES HASIL PENYAKIT"):
+            st.session_state.gejala_terpilih = gejala_user
+            st.session_state.nama_pasien = nama_input
+            st.session_state.page = "Hasil"
+            st.rerun()
+            
+    if st.button("Kembali"):
+        st.session_state.page = "Menu Utama"
+        st.rerun()
 
-# ================== HASIL DIAGNOSIS PENYAKIT ==================
-Elif st.session_state.page == “Hasil”:
-    St.markdown(‘<div class=”top-header-red”><h1>📊 LAPORAN HASIL DIAGNOSIS PENYAKIT</h1></div>’, unsafe_allow_html=True)
+# ================== HALAMAN HASIL PENYAKIT ==================
+elif st.session_state.page == "Hasil":
+    st.markdown('<div class="top-header-red"><h1>📊 LAPORAN HASIL PENYAKIT</h1></div>', unsafe_allow_html=True)
     
-    Gejala_terpilih = st.session_state.gejala_terpilih
-    Nama = st.session_state.get(“nama_pasien”, “Pasien”)
+    gejala_terpilih = st.session_state.gejala_terpilih
+    nama = st.session_state.nama_pasien if st.session_state.nama_pasien else "Pasien"
 
-    If not gejala_terpilih:
-        St.warning(“Data diagnosis belum tersedia.”)
-    Else:
-        # [span_5](start_span)Logika Forward Chaining (Sesuai[span_5](end_span))
-        Hasil_final = None
-        For r in rules:
-            # Menghitung kecocokan gejala minimal 50% sesuai logika di Word
-            Cocok = len([g for g in r[“gejala”] if g in gejala_terpilih])
-            If cocok >= len(r[“gejala”]) * 0.5:
-                Hasil_final = r
-                Break
+    if not gejala_terpilih:
+        st.warning("Data penyakit belum tersedia. Silakan pilih gejala terlebih dahulu.")
+    else:
+        hasil_final = None
+        for r in rules:
+            cocok = len([g for g in r["gejala"] if g in gejala_terpilih])
+            if cocok >= len(r["gejala"]) * 0.5:
+                hasil_final = r
+                break
         
-        If hasil_final:
-            St.markdown(f’’’
-                <div class=”result-card”>
-                    <h3 style=”color:#B71C1C !important; text-align:center;”>Kesimpulan: {hasil_final[‘nama’]}</h3>
+        if hasil_final:
+            st.markdown(f'''
+                <div class="result-card">
+                    <h3 style="color:#B71C1C !important; text-align:center;">Kesimpulan: {hasil_final['nama']}</h3>
                     <p><b>Nama Pasien:</b> {nama}</p>
                     <hr>
                     <p><b>Manifestasi Klinis Terdeteksi:</b></p>
                     <ul>
-                        {“”.join([f”<li>{daftar_gejala[g]}</li>” for g in gejala_terpilih])}
+                        {"".join([f"<li>{daftar_gejala[g]}</li>" for g in gejala_terpilih])}
                     </ul>
-                    <p style=”margin-top:15px;”><b>Rekomendasi Tindakan:</b></p>
-                    <ul style=”color:#B71C1C !important; font-weight:bold;”>
-                        {“”.join([f”<li>{daftar_solusi[s]}</li>” for s in hasil_final[‘solusi’]])}
+                    <p style="margin-top:15px;"><b>Rekomendasi Tindakan:</b></p>
+                    <ul style="color:#B71C1C !important; font-weight:bold;">
+                        {"".join([f"<li>{daftar_solusi[s]}</li>" for s in hasil_final['solusi']])}
                     </ul>
                 </div>
-            ‘’’, unsafe_allow_html=True)
-            St.write(“<br>”, unsafe_allow_html=True)
-            St.button(“UNDUH LAPORAN (PDF)”)
-        Else:
-            [span_6](start_span)st.error(“Sistem tidak menemukan indikasi spesifik berdasarkan database kami.[span_6](end_span)”)
+            ''', unsafe_allow_html=True)
+            st.write("<br>", unsafe_allow_html=True)
+            st.button("UNDUH LAPORAN (PDF)")
+        else:
+            st.error("Sistem tidak menemukan indikasi spesifik berdasarkan kriteria database kami.")
 
-    If st.button(“KEMBALI KE MENU UTAMA”):
-        St.session_state.page = “Dashboard”
-        St.rerun()
+    if st.button("KEMBALI KE MENU UTAMA"):
+        st.session_state.gejala_terpilih = []
+        st.session_state.page = "Menu Utama"
+        st.rerun()
