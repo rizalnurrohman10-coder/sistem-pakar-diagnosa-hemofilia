@@ -16,7 +16,7 @@ st.markdown("""
         font-weight: 500 !important;
     }
 
-    /* Tombol Utama (Merah) */
+    /* Tombol Merah Utama */
     div.stButton > button {
         background-color: #D32F2F !important;
         color: #FFFFFF !important;
@@ -24,6 +24,16 @@ st.markdown("""
         border: none !important;
         font-weight: bold !important;
         width: 100%;
+    }
+
+    /* Memperjelas Tombol Hitam (Submit Button) */
+    div[data-testid="stFormSubmitButton"] > button {
+        background-color: #1A1D23 !important;
+        color: #FFFFFF !important;
+        border: 2px solid #D32F2F !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+        width: 100% !important;
     }
 
     /* Kotak Header Merah */
@@ -40,15 +50,6 @@ st.markdown("""
         margin: 0;
     }
 
-    /* Memperjelas Tombol Hitam/Gelap (Submit Button) */
-    div[data-testid="stFormSubmitButton"] > button {
-        background-color: #1A1D23 !important;
-        color: #FFFFFF !important;
-        border: 2px solid #D32F2F !important;
-        font-size: 16px !important;
-        font-weight: bold !important;
-    }
-
     /* Styling Kotak Referensi Keparahan */
     .severity-box {
         background-color: #ffffff;
@@ -56,13 +57,12 @@ st.markdown("""
         border-radius: 10px;
         border: 1px solid #ced4da;
         text-align: center;
-        margin-bottom: 10px;
+        font-weight: bold;
     }
     </style>
     """, unsafe_allow_html=True)
 
 # ================== DATA SISTEM PAKAR ==================
-# [span_4](start_span)Data gejala sesuai dokumen sumber[span_4](end_span)
 daftar_gejala = {
     "G01": "Mimisan mendadak dan sulit berhenti",
     "G02": "Pendarahan gusi tanpa sebab yang jelas",
@@ -81,7 +81,6 @@ daftar_gejala = {
     "G15": "Riwayat keluarga hemofilia"
 }
 
-# [span_5](start_span)Aturan/Rules berdasarkan klasifikasi[span_5](end_span)
 rules = [
     {"id": "berat", "nama": "Hemofilia A (Klasifikasi: Berat)", "gejala": ["G01","G02","G04","G06","G07","G08","G09","G10","G12","G13","G14","G15"]},
     {"id": "sedang", "nama": "Hemofilia B (Klasifikasi: Sedang)", "gejala": ["G01","G02","G03","G04","G05","G06","G07","G08","G09","G10","G11","G15"]},
@@ -96,7 +95,7 @@ if "gejala_terpilih" not in st.session_state:
 
 # ================== HALAMAN LOGIN ==================
 if st.session_state.page == "Login":
-    st.markdown('<div class="top-header-red"><h1>🩸 LOGIN</h1></div>', unsafe_allow_html=True)
+    st.markdown('<div class="top-header-red"><h1>🩸 LOGIN SISTEM</h1></div>', unsafe_allow_html=True)
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     
@@ -105,7 +104,7 @@ if st.session_state.page == "Login":
             st.session_state.page = "Menu Utama"
             st.rerun()
         else:
-            [span_6](start_span)st.error("Kredensial salah[span_6](end_span)!")
+            st.error("Kredensial salah!")
 
 # ================== MENU UTAMA ==================
 elif st.session_state.page == "Menu Utama":
@@ -118,48 +117,47 @@ elif st.session_state.page == "Menu Utama":
 elif st.session_state.page == "Penyakit":
     st.markdown('<div class="top-header-red"><h1>📋 PROSES PENYAKIT</h1></div>', unsafe_allow_html=True)
     
-    nama_pasien = st.text_input("Nama Pasien")
-    
-    st.subheader("Pilih Gejala Secara Manual:")
-    gejala_manual = []
-    # [span_7](start_span)Mengatur tampilan gejala dalam 2 kolom agar rapi[span_7](end_span)
-    cols_gejala = st.columns(2)
-    for i, (kode, teks) in enumerate(daftar_gejala.items()):
-        with cols_gejala[i % 2]:
-            if st.checkbox(teks, key=f"manual_{kode}"):
-                gejala_manual.append(kode)
-
-    st.markdown("---")
-    st.subheader("Atau Ceklis Berdasarkan Tingkat Keparahan (Otomatis):")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.markdown('<div class="severity-box"><b>RINGAN</b></div>', unsafe_allow_html=True)
-        cek_ringan = st.checkbox("Pilih Ringan", key="cek_ringan")
-    with col2:
-        st.markdown('<div class="severity-box"><b>SEDANG</b></div>', unsafe_allow_html=True)
-        cek_sedang = st.checkbox("Pilih Sedang", key="cek_sedang")
-    with col3:
-        st.markdown('<div class="severity-box"><b>BERAT</b></div>', unsafe_allow_html=True)
-        cek_berat = st.checkbox("Pilih Berat", key="cek_berat")
-
-    # [span_8](start_span)Logika proses hasil[span_8](end_span)
-    if st.button("PROSES HASIL PENYAKIT"):
-        final_gejala = set(gejala_manual)
+    with st.form("main_form"):
+        nama_pasien = st.text_input("Nama Pasien")
         
-        # Fitur Ceklis All berdasarkan pilihan referensi
-        if cek_ringan:
-            final_gejala.update(rules[2]["gejala"])
-        if cek_sedang:
-            final_gejala.update(rules[1]["gejala"])
-        if cek_berat:
-            final_gejala.update(rules[0]["gejala"])
-            
-        st.session_state.gejala_terpilih = list(final_gejala)
-        st.session_state.nama_pasien = nama_pasien
-        st.session_state.page = "Hasil"
-        st.rerun()
+        st.subheader("Pilih Gejala yang Dialami:")
+        gejala_manual = []
+        cols_gejala = st.columns(2)
+        items = list(daftar_gejala.items())
+        for i, (kode, teks) in enumerate(items):
+            with cols_gejala[i % 2]:
+                if st.checkbox(teks, key=f"m_{kode}"):
+                    gejala_manual.append(kode)
+
+        st.markdown("---")
+        st.subheader("Ceklis Berdasarkan Referensi Keparahan:")
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown('<div class="severity-box">RINGAN</div>', unsafe_allow_html=True)
+            cek_ringan = st.checkbox("Pilih Ringan", key="ref_ringan")
+        with col2:
+            st.markdown('<div class="severity-box">SEDANG</div>', unsafe_allow_html=True)
+            cek_sedang = st.checkbox("Pilih Sedang", key="ref_sedang")
+        with col3:
+            st.markdown('<div class="severity-box">BERAT</div>', unsafe_allow_html=True)
+            cek_berat = st.checkbox("Pilih Berat", key="ref_berat")
+
+        st.write("<br>", unsafe_allow_html=True)
+        
+        # TOMBOL HITAM YANG DIPERJELAS
+        submitted = st.form_submit_button("PROSES HASIL PENYAKIT")
+        
+        if submitted:
+            final_gejala = set(gejala_manual)
+            if cek_ringan: final_gejala.update(rules[2]["gejala"])
+            if cek_sedang: final_gejala.update(rules[1]["gejala"])
+            if cek_berat: final_gejala.update(rules[0]["gejala"])
+                
+            st.session_state.gejala_terpilih = list(final_gejala)
+            st.session_state.nama_pasien = nama_pasien
+            st.session_state.page = "Hasil"
+            st.rerun()
 
     if st.button("Kembali"):
         st.session_state.page = "Menu Utama"
@@ -167,15 +165,14 @@ elif st.session_state.page == "Penyakit":
 
 # ================== HALAMAN HASIL PENYAKIT ==================
 elif st.session_state.page == "Hasil":
-    st.markdown('<div class="top-header-red"><h1>📊 LAPORAN HASIL PENYAKIT</h1></div>', unsafe_allow_html=True)
+    st.markdown('<div class="top-header-red"><h1>📊 HASIL PENYAKIT</h1></div>', unsafe_allow_html=True)
     
     gejala = st.session_state.gejala_terpilih
     nama = st.session_state.get("nama_pasien", "Pasien")
     
     if not gejala:
-        st.warning("Tidak ada gejala yang dipilih.")
+        st.warning("Silakan pilih gejala terlebih dahulu.")
     else:
-        # [span_9](start_span)Logika Forward Chaining (Kecocokan 50%)[span_9](end_span)
         hasil_pakar = None
         for r in rules:
             cocok = len([g for g in r["gejala"] if g in gejala])
@@ -184,15 +181,11 @@ elif st.session_state.page == "Hasil":
                 break
         
         if hasil_pakar:
-            [span_10](start_span)st.success(f"### Hasil: {hasil_pakar['nama']}[span_10](end_span)")
+            st.success(f"### Kesimpulan: {hasil_pakar['nama']}")
             st.write(f"**Nama Pasien:** {nama}")
-            with st.expander("Lihat Gejala Terdeteksi"):
-                for g in gejala:
-                    [span_11](start_span)st.write(f"✅ {daftar_gejala[g]}[span_11](end_span)")
         else:
-            st.error("Sistem tidak menemukan indikasi spesifik.")
+            st.error("Indikasi tidak spesifik ditemukan.")
 
     if st.button("KEMBALI KE MENU UTAMA"):
-        st.session_state.gejala_terpilih = []
         st.session_state.page = "Menu Utama"
         st.rerun()
