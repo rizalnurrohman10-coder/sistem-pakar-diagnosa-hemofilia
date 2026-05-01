@@ -3,22 +3,24 @@ import streamlit as st
 # ================== KONFIGURASI HALAMAN ==================
 st.set_page_config(page_title="Sistem Pakar Penyakit Hemofilia", page_icon="🩸", layout="centered")
 
-# ================== CUSTOM CSS (UI & NAVIGASI PUTIH) ==================
+# ================== CUSTOM CSS (FIX WARNA & NAVIGASI) ==================
 st.markdown("""
     <style>
     .main { background-color: #f8f9fa; }
     
-    /* FIX NAVIGASI: Latar belakang sidebar merah tua, teks putih agar kontras */
+    /* FIX NAVIGASI: Background sidebar merah gelap, Teks Putih */
     section[data-testid="stSidebar"] {
-        background-color: #B71C1C !important;
+        background-color: #991515 !important;
+        border-right: 2px solid #5C0D0D !important;
     }
-    section[data-testid="stSidebar"] * {
+    section[data-testid="stSidebar"] .st-emotion-cache-17l6i46, 
+    section[data-testid="stSidebar"] p, 
+    section[data-testid="stSidebar"] span,
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] h3 {
         color: #FFFFFF !important;
-        font-weight: 500 !important;
-    }
-    section[data-testid="stSidebar"] label {
-        font-size: 16px !important;
         font-weight: bold !important;
+        font-size: 16px !important;
     }
 
     /* Header Merah */
@@ -39,25 +41,22 @@ st.markdown("""
         font-weight: bold !important;
         height: 3em;
         width: 100%;
-        border: 2px solid #D32F2F !important;
     }
-    div.stButton > button:hover {
-        background-color: #1A1D23 !important;
-        border: 2px solid #1A1D23 !important;
+    div.stDownloadButton > button {
+        background-color: #1976D2 !important; /* Warna biru untuk tombol unduh */
+        color: white !important;
     }
 
-    /* Tombol Hitam (Proses Analisis) */
+    /* Tombol Hitam (Proses) */
     div[data-testid="stFormSubmitButton"] > button {
         background-color: #1A1D23 !important;
         color: #FFFFFF !important;
         border: 2px solid #D32F2F !important;
         font-weight: bold !important;
         width: 100% !important;
-        height: 3.5em !important;
-        font-size: 16px !important;
     }
 
-    /* Kotak Keparahan */
+    /* Severity Box */
     .severity-box {
         background-color: #ffffff;
         padding: 10px;
@@ -65,18 +64,6 @@ st.markdown("""
         border: 1px solid #ced4da;
         text-align: center;
         font-weight: bold;
-        color: #1A1D23 !important;
-        margin-bottom: 5px;
-    }
-    
-    /* Box Edukasi */
-    .info-box {
-        background-color: #ffffff;
-        padding: 20px;
-        border-radius: 10px;
-        border-left: 5px solid #D32F2F;
-        box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
         color: #1A1D23;
     }
     </style>
@@ -122,12 +109,13 @@ rules = [
     {"id": "berat", "nama": "Hemofilia A (Klasifikasi: Berat)", "gejala": ["G01","G02","G04","G06","G07","G08","G09","G10","G12","G13","G14","G15"], "solusi": ["S09","S10","S11","S12"]}
 ]
 
-# ============= STATE MANAGEMENT =============
+# ============= STATE & LOGIN =============
 if "akses" not in st.session_state: st.session_state.akses = False
+if "menu_aktif" not in st.session_state: st.session_state.menu_aktif = "Beranda Utama"
 if "gejala_terpilih" not in st.session_state: st.session_state.gejala_terpilih = []
-if "menu" not in st.session_state: st.session_state.menu = "Beranda Utama"
+if "nama_pasien" not in st.session_state: st.session_state.nama_pasien = ""
+if "umur_pasien" not in st.session_state: st.session_state.umur_pasien = 0
 
-# ============= HALAMAN AKSES MASUK (LOGIN) =============
 if not st.session_state.akses:
     st.markdown('<div class="header-box"><h1>🩸 AKSES MASUK</h1></div>', unsafe_allow_html=True)
     user = st.text_input("ID Pengguna")
@@ -135,46 +123,52 @@ if not st.session_state.akses:
     if st.button("VERIFIKASI"):
         if user == "admin" and pw == "123":
             st.session_state.akses = True
+            st.session_state.menu_aktif = "Beranda Utama"
             st.rerun()
         else: st.error("Kredensial salah!")
 else:
     # Sidebar Navigasi
-    st.sidebar.markdown("<h3 style='text-align:center;'>🧭 NAVIGASI SISTEM</h3>", unsafe_allow_html=True)
+    st.sidebar.markdown("### 🧭 MENU NAVIGASI")
     
-    # Sync radio button dengan session_state menu
-    menu_options = ["Beranda Utama", "Pemeriksaan Penyakit", "Laporan Penyakit", "Keluar Sistem"]
-    menu = st.sidebar.radio("Pilih Halaman:", menu_options, index=menu_options.index(st.session_state.menu))
+    # Menghubungkan radio button dengan session_state agar bisa dikontrol tombol
+    menu = st.sidebar.radio("Pilih Halaman:", 
+                            ["Beranda Utama", "Pemeriksaan Penyakit", "Laporan Penyakit", "Keluar Sistem"],
+                            index=["Beranda Utama", "Pemeriksaan Penyakit", "Laporan Penyakit", "Keluar Sistem"].index(st.session_state.menu_aktif))
     
-    # Deteksi perubahan menu dari sidebar
-    if menu != st.session_state.menu:
-        st.session_state.menu = menu
-        st.rerun()
+    st.session_state.menu_aktif = menu # Sinkronisasi manual
 
-    # ============= HALAMAN 1: BERANDA UTAMA =============
-    if st.session_state.menu == "Beranda Utama":
+    # ============= BERANDA =============
+    if menu == "Beranda Utama":
         st.markdown('<div class="header-box"><h1>🏠 BERANDA UTAMA</h1></div>', unsafe_allow_html=True)
+        st.info("Selamat datang di Sistem Pakar Analisis Penyakit Hemofilia.")
         
         st.markdown("""
-        <div class="info-box">
-            <h3 style="color:#D32F2F; margin-top:0;">Apa itu Hemofilia?</h3>
-            <p style="text-align:justify; font-size:15px; margin-bottom:0;">
-                <b>Hemofilia</b> adalah gangguan pembekuan darah bawaan yang langka. Kondisi ini menyebabkan penderitanya kekurangan protein yang dibutuhkan untuk proses pembekuan darah (Faktor Pembekuan). Akibatnya, penderita hemofilia akan mengalami pendarahan lebih lama dibandingkan orang normal saat mengalami luka. Hemofilia dapat memicu pendarahan internal pada sendi dan otot yang bisa merusak organ secara permanen jika tidak didiagnosis dan ditangani dengan tepat.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+        ### Apa itu Hemofilia?
+        **Hemofilia** adalah gangguan pembekuan darah bawaan yang menyebabkan darah sulit membeku secara normal. Akibatnya, penderita akan mengalami pendarahan yang lebih lama ketika terluka. Kondisi ini utamanya disebabkan oleh kurangnya protein pembekuan darah (Faktor VIII atau Faktor IX).
         
-        if st.button("🚀 MULAI PEMERIKSAAN PENYAKIT SEKARANG"):
-            st.session_state.menu = "Pemeriksaan Penyakit"
+        **Klasifikasi Umum:**
+        * **Ringan**: Pendarahan biasanya terjadi hanya setelah operasi besar atau cedera parah.
+        * **Sedang**: Pendarahan bisa terjadi setelah cedera ringan.
+        * **Berat**: Sering mengalami pendarahan spontan, terutama di dalam sendi dan otot tanpa sebab yang jelas.
+        """)
+        
+        st.write("<br>", unsafe_allow_html=True)
+        if st.button("🚀 MULAI PEMERIKSAAN PENYAKIT"):
+            st.session_state.menu_aktif = "Pemeriksaan Penyakit"
             st.rerun()
 
-    # ============= HALAMAN 2: PEMERIKSAAN PENYAKIT =============
-    elif st.session_state.menu == "Pemeriksaan Penyakit":
+    # ============= PEMERIKSAAN =============
+    elif menu == "Pemeriksaan Penyakit":
         st.markdown('<div class="header-box"><h1>📋 PEMERIKSAAN PENYAKIT</h1></div>', unsafe_allow_html=True)
-        
         with st.form("f_pemeriksaan"):
-            st.session_state.nama_pasien = st.text_input("Nama Lengkap Pasien", value=st.session_state.get("nama_pasien", ""))
+            col_id1, col_id2 = st.columns(2)
+            with col_id1:
+                input_nama = st.text_input("Nama Pasien", value=st.session_state.nama_pasien)
+            with col_id2:
+                input_umur = st.number_input("Umur Pasien (Tahun)", min_value=0, max_value=120, value=st.session_state.umur_pasien)
             
-            st.subheader("Ceklis Gejala Manual:")
+            st.markdown("---")
+            st.subheader("Pilih Gejala Manual:")
             gejala_m = []
             c_g = st.columns(2)
             for i, (k, v) in enumerate(daftar_gejala.items()):
@@ -182,102 +176,119 @@ else:
                     if st.checkbox(v, key=f"chk_{k}"): gejala_m.append(k)
             
             st.markdown("---")
-            st.subheader("Pilih Cepat Berdasarkan Referensi Keparahan:")
+            st.subheader("Atau Pilih Cepat (Referensial):")
             cr1, cr2, cr3 = st.columns(3)
             with cr1:
                 st.markdown('<div class="severity-box">RINGAN</div>', unsafe_allow_html=True)
-                p_ringan = st.checkbox("Pilih Paket Ringan", key="p_r")
+                p_ringan = st.checkbox("Pilih Ringan", key="p_r")
             with cr2:
                 st.markdown('<div class="severity-box">SEDANG</div>', unsafe_allow_html=True)
-                p_sedang = st.checkbox("Pilih Paket Sedang", key="p_s")
+                p_sedang = st.checkbox("Pilih Sedang", key="p_s")
             with cr3:
                 st.markdown('<div class="severity-box">BERAT</div>', unsafe_allow_html=True)
-                p_berat = st.checkbox("Pilih Paket Berat", key="p_b")
+                p_berat = st.checkbox("Pilih Berat", key="p_b")
 
             if st.form_submit_button("PROSES ANALISIS PENYAKIT"):
                 final = set(gejala_m)
-                # Paksa masuk gejala jika pilih cepat
+                
+                # Pemilihan Cepat Otomatis
                 if p_ringan: final.update(rules[0]["gejala"])
                 if p_sedang: final.update(rules[1]["gejala"])
                 if p_berat:  final.update(rules[2]["gejala"])
                 
                 st.session_state.gejala_terpilih = list(final)
+                st.session_state.nama_pasien = input_nama
+                st.session_state.umur_pasien = input_umur
                 
-                # OTOMATIS REDIRECT KE LAPORAN
-                st.session_state.menu = "Laporan Penyakit"
+                # Otomatis pindah ke halaman hasil
+                st.session_state.menu_aktif = "Laporan Penyakit"
                 st.rerun()
 
-    # ============= HALAMAN 3: LAPORAN PENYAKIT =============
-    elif st.session_state.menu == "Laporan Penyakit":
+    # ============= LAPORAN (LOGIKA AKURASI TINGGI) =============
+    elif menu == "Laporan Penyakit":
         st.markdown('<div class="header-box"><h1>📊 LAPORAN PENYAKIT</h1></div>', unsafe_allow_html=True)
         gejala = st.session_state.gejala_terpilih
-        nama = st.session_state.get('nama_pasien', '')
-        if nama == "": nama = "Pasien Anonim"
+        nama = st.session_state.nama_pasien if st.session_state.nama_pasien else "Anonim"
+        umur = st.session_state.umur_pasien
         
         if not gejala:
-            st.warning("Data pasien belum diinput. Silakan kembali ke menu Pemeriksaan Penyakit.")
+            st.warning("Data pasien belum diproses. Silakan kembali ke menu Pemeriksaan Penyakit.")
         else:
-            # PERBAIKAN LOGIKA AKURASI (Jaccard Index)
-            # Menjamin 100% akurat sesuai paket yang dipilih
+            # PERBAIKAN LOGIKA AKURASI: Menggunakan Precision Matching
+            # Supaya yang dipilih persis sama dengan kelompoknya.
             skor_rules = []
             for r in rules:
-                cocok = len([g for g in r["gejala"] if g in gejala])
-                total_unik = len(set(r["gejala"] + gejala))
-                skor = cocok / total_unik if total_unik > 0 else 0
-                skor_rules.append({"rule": r, "skor": skor})
+                irisan = len([g for g in r["gejala"] if g in gejala])
+                gabungan = len(set(r["gejala"] + gejala))
+                akurasi = irisan / gabungan # Semakin mendekati 1.0 (100%), semakin akurat
+                skor_rules.append({"rule": r, "skor": akurasi})
             
-            # Urutkan berdasarkan kemiripan paling tinggi
+            # Urutkan dari akurasi tertinggi
             skor_rules = sorted(skor_rules, key=lambda x: x["skor"], reverse=True)
             terbaik = skor_rules[0]
 
-            if terbaik["skor"] > 0.3: # Ambang batas diturunkan agar lebih toleran pada manual
+            if terbaik["skor"] > 0.0:
                 hasil = terbaik["rule"]
-                st.success(f"### Kesimpulan Analisis: **{hasil['nama']}**")
-                st.write(f"**Identitas Pasien:** {nama}")
+                st.success(f"### Kesimpulan Analisis: {hasil['nama']}")
+                
+                # Menampilkan identitas
+                st.markdown(f"**Nama Pasien:** {nama} <br> **Umur:** {umur} Tahun", unsafe_allow_html=True)
                 
                 c1, c2 = st.columns(2)
                 with c1:
-                    with st.expander("Manifestasi Klinis Terdeteksi", expanded=True):
-                        for g in gejala: st.write(f"✅ {daftar_gejala[g]}")
+                    with st.expander("Gejala Terdeteksi", expanded=True):
+                        gejala_text = ""
+                        for g in gejala: 
+                            st.write(f"✅ {daftar_gejala[g]}")
+                            gejala_text += f"- {daftar_gejala[g]}\n"
                 with c2:
-                    with st.expander("Rekomendasi Tindakan Medis", expanded=True):
-                        for s in hasil["solusi"]: st.write(f"📌 {daftar_solusi[s]}")
-                
-                # --- FITUR UNDUH LAPORAN ---
-                teks_laporan = f"LAPORAN HASIL ANALISIS HEMOFILIA\n{'='*40}\n"
-                teks_laporan += f"Nama Pasien : {nama}\n"
-                teks_laporan += f"Diagnosis   : {hasil['nama']}\n\n"
-                teks_laporan += "GEJALA TERDETEKSI:\n"
-                for g in gejala: teks_laporan += f"- {daftar_gejala[g]}\n"
-                teks_laporan += "\nREKOMENDASI PENANGANAN:\n"
-                for s in hasil["solusi"]: teks_laporan += f"- {daftar_solusi[s]}\n"
-                
-                st.write("<br>", unsafe_allow_html=True)
+                    with st.expander("Rekomendasi Tindakan", expanded=True):
+                        solusi_text = ""
+                        for s in hasil["solusi"]: 
+                            st.write(f"📌 {daftar_solusi[s]}")
+                            solusi_text += f"- {daftar_solusi[s]}\n"
+                            
+                # Tombol Unduh Laporan (.txt sebagai representasi dokumen langsung)
+                konten_laporan = f"""LAPORAN HASIL PEMERIKSAAN HEMOFILIA
+========================================
+Nama Pasien : {nama}
+Umur        : {umur} Tahun
+Hasil Akhir : {hasil['nama']}
+
+Gejala yang Terdeteksi:
+{gejala_text}
+Rekomendasi Tindakan:
+{solusi_text}
+========================================
+*Dokumen ini digenerate secara otomatis oleh Sistem Pakar.*
+"""
                 st.download_button(
-                    label="📥 UNDUH LAPORAN (Dokumen Text)",
-                    data=teks_laporan,
-                    file_name=f"Laporan_Hemofilia_{nama.replace(' ','_')}.txt",
+                    label="📥 UNDUH LAPORAN (DOCUMENT)",
+                    data=konten_laporan,
+                    file_name=f"Laporan_{nama.replace(' ', '_')}.txt",
                     mime="text/plain"
                 )
+                
             else:
-                st.error("Gejala tidak memenuhi ambang batas untuk mendiagnosis klasifikasi tertentu.")
-        
-        # --- TOMBOL BAWAH ---
+                st.error("Gejala tidak dikenali oleh sistem klasifikasi kami.")
+                
+        # Tombol Navigasi Bawah
         st.markdown("---")
-        b1, b2 = st.columns(2)
-        with b1:
-            if st.button("Kembali ke Beranda Utama"):
-                st.session_state.menu = "Beranda Utama"
+        cb1, cb2 = st.columns(2)
+        with cb1:
+            if st.button("⬅️ Kembali ke Beranda Utama"):
+                st.session_state.menu_aktif = "Beranda Utama"
                 st.rerun()
-        with b2:
-            if st.button("🚪 Keluar Sistem (Login)"):
+        with cb2:
+            if st.button("🚪 Keluar ke Login"):
                 st.session_state.akses = False
-                st.session_state.menu = "Beranda Utama"
+                st.session_state.menu_aktif = "Beranda Utama"
+                st.session_state.gejala_terpilih = []
                 st.rerun()
 
-    # ============= KELUAR SISTEM =============
-    elif st.session_state.menu == "Keluar Sistem":
+    # ============= KELUAR =============
+    elif menu == "Keluar Sistem":
         st.session_state.akses = False
-        st.session_state.menu = "Beranda Utama"
+        st.session_state.menu_aktif = "Beranda Utama"
         st.session_state.gejala_terpilih = []
         st.rerun()
